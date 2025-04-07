@@ -1,0 +1,74 @@
+function importarFacebookAdsPlacement() {
+  const token = "token aqui ";
+  const adAccountId = 'ID DA SUA CONTA';
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("FACEADS_REGION") || SpreadsheetApp.getActiveSpreadsheet().insertSheet("FACEADS_REGION");
+
+  const headers = ["Data", "Ad ID", "Ad Set ID","Amount Spent","Impressions", "Unique_Clicks", "Clicks", "Região"];
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+  }
+
+  // 🔧 Configuração da escolha de data
+  const usarDataManual = false;
+  const dataManual = new Date("2024-01-01");
+
+  let dataAtual;
+
+  if (usarDataManual) {
+    dataAtual = new Date(dataManual);
+  } else {
+    const dataColuna = sheet.getRange(2, 1, sheet.getLastRow() - 1 || 1).getValues().flat().filter(v => v);
+    const ultimaData = dataColuna.length ? new Date(dataColuna[dataColuna.length - 1]) : new Date("2024-01-01");
+    dataAtual = new Date(ultimaData);
+    dataAtual.setDate(dataAtual.getDate() + 1);
+  }
+
+  const hoje = new Date();
+  hoje.setDate(hoje.getDate() - 1);
+
+  while (dataAtual <= hoje) {
+    const since = dataAtual.toISOString().split("T")[0];
+    const until = since;
+
+    console.log(`🔎 Buscando dados para: ${since}`);
+
+    const url = `https://graph.facebook.com/v18.0/act_${accountId}/insights?fields=ad_id,adset_id,spend,impressions,unique_clicks,clicks&breakdowns=region&level=ad&limit=1000&time_range=${encodeURIComponent(`{"since":"${since}","until":"${until}"}`)}&access_token=${token}`;
+
+    try {
+      const response = UrlFetchApp.fetch(url);
+      const json = JSON.parse(response.getContentText());
+      const dados = json.data || [];
+
+      if (dados.length === 0) {
+        console.log(`⚠️ Nenhum dado no dia ${since}. Pulando.`);
+      }
+
+      const linhas = [];
+
+      dados.forEach(item => {
+        const conversas = (item.actions || []).find(a => a.action_type === "onsite_conversion.messaging_conversation_started_7d");
+
+        linhas.push([
+          item.date_start || since,
+          item.ad_id || "",
+          item.adset_id || "",
+          parseFloat(item.spend) || "0",
+          item.impressions || "",
+          item.unique_clicks || "",
+          item.clicks || "",
+          item.region || ""
+        ]);
+      });
+
+      if (linhas.length > 0) {
+        sheet.getRange(sheet.getLastRow() + 1, 1, linhas.length, headers.length).setValues(linhas);
+      }
+    } catch (erro) {
+      console.error(`❌ Erro ao buscar dados de ${since}: ${erro}`);
+    }
+
+    dataAtual.setDate(dataAtual.getDate() + 1);
+  }
+
+  console.log("✅ Consulta finalizada.");
+}
