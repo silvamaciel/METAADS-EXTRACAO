@@ -1,5 +1,6 @@
 function importarFacebookAdsInsightsNivelAd() {
-  const token = "ADICIONAR O TOKEN AQUI";
+    const token = "token aqui ";
+  const adAccountId = 'act_ID DASUA CONTA';
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("FACEBOOKADS_ANUNCIO_MAIN") || SpreadsheetApp.getActiveSpreadsheet().insertSheet("FACEBOOKADS_ANUNCIO_MAIN");
 
   // Cabeçalho (caso a planilha esteja vazia)
@@ -36,7 +37,7 @@ function importarFacebookAdsInsightsNivelAd() {
 
     console.log(`🔍 Buscando dados para: ${since}`);
 
-    const url = `https://graph.facebook.com/v22.0/act_1050454429517129/insights?fields=campaign_name%2Cadset_name%2Cad_name%2Cad_id%2Cspend%2Cimpressions%2Cclicks%2Creach%2Cobjective%2Ccampaign_id%2Cadset_id%2Coutbound_clicks_ctr%2Cactions&time_increment=1&time_range=%7B%22since%22%3A%22${since}%22%2C%22until%22%3A%22${until}%22%7D&level=ad&limit=100&access_token=${token}`;
+    const url = `https://graph.facebook.com/v22.0/${adAccountId}/insights?fields=campaign_name%2Cadset_name%2Cad_name%2Cad_id%2Cspend%2Cimpressions%2Cclicks%2Creach%2Cobjective%2Ccampaign_id%2Cadset_id%2Coutbound_clicks_ctr%2Cactions&time_increment=1&time_range=%7B%22since%22%3A%22${since}%22%2C%22until%22%3A%22${until}%22%7D&level=ad&limit=100&access_token=${token}`;
 
     try {
       const response = UrlFetchApp.fetch(url);
